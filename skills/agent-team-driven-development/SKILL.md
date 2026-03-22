@@ -106,7 +106,18 @@ This creates:
 - Team config at `~/.claude/teams/feature-auth-system/config.json`
 - Shared TaskList at `~/.claude/tasks/feature-auth-system/`
 
-## Step 2: Spawn Teammates
+## Step 2: Spawn Teammates (MANDATORY)
+
+<HARD-GATE>
+**You MUST spawn ALL teammate types. This is not optional.**
+
+Every team requires:
+- **2-3 Implementers** - Execute tasks
+- **1 Spec Reviewer** - Verify spec compliance + integration
+- **1 Code Quality Reviewer** - Verify code quality + wiring
+
+Skipping any teammate type violates the quality system. There are no exceptions for "small teams," "simple projects," or "experienced implementers."
+</HARD-GATE>
 
 **Spawn Implementers (2-3):**
 ```typescript
@@ -139,6 +150,18 @@ Agent({
 ```
 
 **Use `general-purpose` for all teammates** because they need Edit access for fixes.
+
+### Anti-Rationalization: Skipping Reviewers
+
+| Excuse | Reality |
+|--------|---------|
+| "We only have 2 tasks" | Even 1 task needs review |
+| "Implementers can review each other" | Conflict of interest - fresh eyes required |
+| "I'll review myself as team lead" | Same person doing and reviewing = no review |
+| "It's a simple project" | Simple projects have bugs too |
+| "Reviewers add overhead" | Debugging is more overhead |
+| "I trust the implementers" | Trust ≠ correctness verification |
+| "We're just prototyping" | Prototypes become production code |
 
 ## Step 3: Create TaskList
 
@@ -369,6 +392,28 @@ SendMessage({
 - Run integration checks after parallel groups
 - Get shutdown approval before TeamDelete
 - Follow TDD for each task
+
+## Anti-Pattern: "This Task Is Too Simple To Review"
+
+**EVERY task gets reviewed. No exceptions.**
+
+| Rationalization | Reality |
+|-----------------|---------|
+| "It's just a few lines" | Bugs hide in simple code too |
+| "It's only types/interfaces" | Wrong types cause cascading failures |
+| "The implementer is experienced" | Everyone makes mistakes |
+| "We're in a hurry" | Skipping review costs more time later |
+| "I reviewed it mentally" | Fresh eyes catch things you miss |
+| "It's a trivial fix" | "Trivial" fixes introduce regressions |
+| "Reviews slow us down" | Debugging is slower than reviewing |
+
+**If you find yourself thinking a task doesn't need review, that's exactly when you need it most.**
+
+<HARD-GATE>
+**No task is too simple for review.** Spec compliance review → Code quality review → Integration verification. This sequence is MANDATORY for EVERY task, regardless of perceived complexity.
+
+Violating this gate means violating the entire quality system.
+</HARD-GATE>
 
 ## Integration
 

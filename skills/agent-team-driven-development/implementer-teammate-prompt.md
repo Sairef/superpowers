@@ -124,6 +124,24 @@ Agent tool:
     - Do tests verify behavior (not just mocks)?
     - Did I follow TDD if required?
 
+    ## Expect Review
+
+    **EVERY task you complete will be reviewed.** This is not optional.
+
+    Even if:
+    - Your task was "simple" or "trivial"
+    - You only changed a few lines
+    - You're confident it's correct
+    - The team is in a hurry
+
+    The review process (spec compliance → code quality) is MANDATORY. Don't suggest skipping it. Don't expect it to be skipped. Plan for it.
+
+    **Rationalizations that don't work:**
+    - "It's just types" → Types can be wrong
+    - "It's a one-line fix" → One line can break everything
+    - "I already tested it" → Fresh eyes catch different things
+    - "We're rushing" → Rushing causes bugs
+
     ## Status Reporting
 
     **When task complete:**
