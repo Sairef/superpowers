@@ -130,6 +130,84 @@ Return: Summary of what you found and what you fixed.
 **Exploratory debugging:** You don't know what's broken yet
 **Shared state:** Agents would interfere (editing same files, using same resources)
 
+## Task Tool vs Teammates
+
+When you have parallel work, choose the right tool:
+
+### Use Task Tool (this skill) when:
+
+- **One-shot investigations** - Each agent does one thing and done
+- **No coordination needed** - Agents work independently, no communication
+- **Truly isolated** - No shared context benefit between agents
+- **Simple parallel dispatch** - Just fire and forget
+
+```
+Task({ description: "Fix test A", prompt: "..." })
+Task({ description: "Fix test B", prompt: "..." })
+Task({ description: "Fix test C", prompt: "..." })
+// All run in parallel, no coordination
+```
+
+### Use Teammates (agent-team-driven-development) when:
+
+- **Multiple related tasks per agent** - Agents do several things
+- **Shared context helps** - Agents benefit from accumulated knowledge
+- **Coordination needed** - Agents communicate about work
+- **Integration verification** - Need to verify parallel work integrates correctly
+
+```
+TeamCreate({ team_name: "feature-team" })
+Agent({ team_name: "feature-team", name: "implementer-1", prompt: "..." })
+Agent({ team_name: "feature-team", name: "implementer-2", prompt: "..." })
+// Teammates persist, share TaskList, coordinate via SendMessage
+```
+
+### Decision Flowchart
+
+```dot
+digraph task_vs_teammate {
+    "Parallel work needed?" [shape=diamond];
+    "Multiple tasks per agent?" [shape=diamond];
+    "Need coordination?" [shape=diamond];
+    "Use Task tool\n(this skill)" [shape=box];
+    "Use Teammates\n(agent-team-driven-development)" [shape=box style=filled fillcolor=lightgreen];
+
+    "Parallel work needed?" -> "Multiple tasks per agent?" [label="yes"];
+    "Parallel work needed?" -> "No parallel dispatch needed" [label="no"];
+    "Multiple tasks per agent?" -> "Need coordination?" [label="yes"];
+    "Multiple tasks per agent?" -> "Use Task tool\n(this skill)" [label="no"];
+    "Need coordination?" -> "Use Teammates\n(agent-team-driven-development)" [label="yes"];
+    "Need coordination?" -> "Use Task tool\n(this skill)" [label="no"];
+}
+```
+
+### Comparison
+
+| Factor | Task Tool | Teammates |
+|--------|-----------|-----------|
+| Persistence | Disposable | Persist across tasks |
+| Coordination | None | SendMessage, shared TaskList |
+| Context | Isolated | Shared team context |
+| Best for | One-shot investigations | Multi-task implementation |
+| Overhead | Low | Higher (team setup) |
+| Integration checks | Manual | Built-in workflow |
+
+### Example Scenarios
+
+**Task Tool - Debugging multiple test failures:**
+```
+3 test files failing independently →
+Task("Fix test A") + Task("Fix test B") + Task("Fix test C")
+→ Each agent fixes one file, done
+```
+
+**Teammates - Implementing a feature with parallel components:**
+```
+Feature with auth, API, UI components →
+TeamCreate → implementer-1 (auth) + implementer-2 (API) + implementer-3 (UI)
+→ Reviewers verify integration, teammates coordinate on interfaces
+```
+
 ## Real Example from Session
 
 **Scenario:** 6 test failures across 3 files after major refactoring
