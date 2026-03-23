@@ -5,7 +5,7 @@ description: Use when completing tasks, implementing major features, or before m
 
 # Requesting Code Review
 
-Dispatch superpowers:code-reviewer subagent to catch issues before they cascade. The reviewer gets precisely crafted context for evaluation — never your session's history. This keeps the reviewer focused on the work product, not your thought process, and preserves your own context for continued work.
+Spawn skeptical-architect-reviewer to catch issues before they cascade. The reviewer gets precisely crafted context for evaluation — never your session's history. This keeps the reviewer focused on the work product, not your thought process, and preserves your own context for continued work.
 
 **Core principle:** Review early, review often.
 
@@ -29,16 +29,18 @@ BASE_SHA=$(git rev-parse HEAD~1)  # or origin/main
 HEAD_SHA=$(git rev-parse HEAD)
 ```
 
-**2. Dispatch code-reviewer subagent:**
+**2. Spawn skeptical-architect-reviewer with CODE review mode:**
 
-Use Task tool with superpowers:code-reviewer type, fill template at `code-reviewer.md`
+```typescript
+Agent({
+    name: "skeptical-architect-reviewer",
+    prompt: `CLAIM: Implementation at ${BASE_SHA}..${HEAD_SHA} is complete and ready.
 
-**Placeholders:**
-- `{WHAT_WAS_IMPLEMENTED}` - What you just built
-- `{PLAN_OR_REQUIREMENTS}` - What it should do
-- `{BASE_SHA}` - Starting commit
-- `{HEAD_SHA}` - Ending commit
-- `{DESCRIPTION}` - Brief summary
+What was implemented: ${WHAT_WAS_IMPLEMENTED}
+Requirements: ${PLAN_OR_REQUIREMENTS}
+Description: ${DESCRIPTION}`
+})
+```
 
 **3. Act on feedback:**
 - Fix Critical issues immediately
@@ -56,14 +58,16 @@ You: Let me request code review before proceeding.
 BASE_SHA=$(git log --oneline | grep "Task 1" | head -1 | awk '{print $1}')
 HEAD_SHA=$(git rev-parse HEAD)
 
-[Dispatch superpowers:code-reviewer subagent]
-  WHAT_WAS_IMPLEMENTED: Verification and repair functions for conversation index
-  PLAN_OR_REQUIREMENTS: Task 2 from docs/superpowers/plans/deployment-plan.md
-  BASE_SHA: a7981ec
-  HEAD_SHA: 3df7661
-  DESCRIPTION: Added verifyIndex() and repairIndex() with 4 issue types
+Agent({
+    name: "skeptical-architect-reviewer",
+    prompt: `CLAIM: Implementation at ${BASE_SHA}..${HEAD_SHA} is complete and ready.
 
-[Subagent returns]:
+What was implemented: Verification and repair functions for conversation index
+Requirements: Task 2 from docs/superpowers/plans/deployment-plan.md
+Description: Added verifyIndex() and repairIndex() with 4 issue types`
+})
+
+[Reviewer returns]:
   Strengths: Clean architecture, real tests
   Issues:
     Important: Missing progress indicators
@@ -101,5 +105,3 @@ You: [Fix progress indicators]
 - Push back with technical reasoning
 - Show code/tests that prove it works
 - Request clarification
-
-See template at: requesting-code-review/code-reviewer.md

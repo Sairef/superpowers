@@ -53,9 +53,10 @@ digraph when_to_use {
 |------|-------|----------------|
 | Team Lead | 1 (you) | Orchestrate team, spawn teammates, coordinate work, final decisions |
 | Implementer | 2-3 | Claim and execute tasks, write tests, commit code |
-| Skeptical Architect Reviewer | 1 | Unified reviewer for spec compliance, code quality, integration |
 
 **You are the Team Lead.** When you call TeamCreate, you automatically become the team lead. No separate teammate spawn needed.
+
+**Reviews use skeptical-architect-reviewer** (spawned fresh per review, not a persistent teammate). This ensures fresh eyes and prevents context bias.
 
 ## The Process
 
@@ -105,16 +106,12 @@ This creates:
 - Team config at `~/.claude/teams/feature-auth-system/config.json`
 - Shared TaskList at `~/.claude/tasks/feature-auth-system/`
 
-## Step 2: Spawn Teammates (MANDATORY)
+## Step 2: Spawn Implementer Teammates (MANDATORY)
 
 <HARD-GATE>
-**You MUST spawn ALL teammate types. This is not optional.**
+**You MUST spawn 2-3 implementer teammates. This is not optional.**
 
-Every team requires:
-- **2-3 Implementers** - Execute tasks
-- **1 Skeptical Architect Reviewer** - Unified reviews (spec compliance, code quality, integration)
-
-Skipping any teammate type violates the quality system. There are no exceptions for "small teams," "simple projects," or "experienced implementers."
+Skipping implementer spawning violates the parallel execution model. There are no exceptions for "small teams," "simple projects," or "I can do it myself."
 </HARD-GATE>
 
 **Spawn Implementers (2-3):**
@@ -127,19 +124,9 @@ Agent({
 })
 ```
 
-**Spawn Skeptical Architect Reviewer:**
-```typescript
-Agent({
-    name: "skeptical-architect-reviewer",
-    prompt: "CLAIM: [Review claim based on completed task]"
-})
-```
-
-**Note:** The skeptical-architect-reviewer is spawned fresh for each review (not a persistent teammate). This ensures fresh eyes and prevents context bias.
-
 **Use `general-purpose` for implementers** because they need Edit access for fixes.
 
-### Anti-Rationalization: Skipping Reviewers
+### Anti-Rationalization: Skipping Reviews
 
 | Excuse | Reality |
 |--------|---------|
@@ -147,7 +134,7 @@ Agent({
 | "Implementers can review each other" | Conflict of interest - fresh eyes required |
 | "I'll review myself as team lead" | Same person doing and reviewing = no review |
 | "It's a simple project" | Simple projects have bugs too |
-| "Reviewers add overhead" | Debugging is more overhead |
+| "Reviews add overhead" | Debugging is more overhead |
 | "I trust the implementers" | Trust ≠ correctness verification |
 | "We're just prototyping" | Prototypes become production code |
 
