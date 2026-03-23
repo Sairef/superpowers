@@ -53,8 +53,7 @@ digraph when_to_use {
 |------|-------|----------------|
 | Team Lead | 1 (you) | Orchestrate team, spawn teammates, coordinate work, final decisions |
 | Implementer | 2-3 | Claim and execute tasks, write tests, commit code |
-| Spec Reviewer | 1 | Verify spec compliance, check integration points |
-| Code Quality Reviewer | 1 | Verify code quality, check wiring between components |
+| Skeptical Architect Reviewer | 1 | Unified reviewer for spec compliance, code quality, integration |
 
 **You are the Team Lead.** When you call TeamCreate, you automatically become the team lead. No separate teammate spawn needed.
 
@@ -113,8 +112,7 @@ This creates:
 
 Every team requires:
 - **2-3 Implementers** - Execute tasks
-- **1 Spec Reviewer** - Verify spec compliance + integration
-- **1 Code Quality Reviewer** - Verify code quality + wiring
+- **1 Skeptical Architect Reviewer** - Unified reviews (spec compliance, code quality, integration)
 
 Skipping any teammate type violates the quality system. There are no exceptions for "small teams," "simple projects," or "experienced implementers."
 </HARD-GATE>
@@ -129,27 +127,17 @@ Agent({
 })
 ```
 
-**Spawn Spec Reviewer:**
+**Spawn Skeptical Architect Reviewer:**
 ```typescript
 Agent({
-    subagent_type: "general-purpose",
-    team_name: "feature-auth-system",
-    name: "spec-reviewer",
-    prompt: "[Full prompt from spec-reviewer-teammate-prompt.md template]"
+    name: "skeptical-architect-reviewer",
+    prompt: "CLAIM: [Review claim based on completed task]"
 })
 ```
 
-**Spawn Code Quality Reviewer:**
-```typescript
-Agent({
-    subagent_type: "general-purpose",
-    team_name: "feature-auth-system",
-    name: "code-reviewer",
-    prompt: "[Full prompt from code-quality-reviewer-teammate-prompt.md template]"
-})
-```
+**Note:** The skeptical-architect-reviewer is spawned fresh for each review (not a persistent teammate). This ensures fresh eyes and prevents context bias.
 
-**Use `general-purpose` for all teammates** because they need Edit access for fixes.
+**Use `general-purpose` for implementers** because they need Edit access for fixes.
 
 ### Anti-Rationalization: Skipping Reviewers
 
@@ -229,29 +217,31 @@ Implementer-1: "Completed Task 1. Status: DONE. Files: auth/types.py, tests/auth
 ```
 
 **Coordinate reviews:**
-- After implementer reports DONE, request spec review
-- Spec reviewer checks compliance + integration
+- After implementer reports DONE, spawn skeptical-architect-reviewer for spec compliance review
+- Reviewer checks compliance + integration
 - If issues, implementer fixes, re-review
-- After spec passes, request code quality review
+- After spec passes, spawn skeptical-architect-reviewer for code quality review
 
 ## Step 6: Integration Verification
 
 **After each parallel group completes:**
 
+Spawn skeptical-architect-reviewer for integration review:
+
 ```typescript
-SendMessage({
-    to: "spec-reviewer",
-    message: {
-        type: "integration_review_request",
-        parallel_group: [1, 2, 3],
-        checkpoint: "Auth Feature Integration",
-        verifications: [
-            "Types from Task 1 match imports in Tasks 2, 3",
-            "API client and UI can communicate",
-            "Run: pytest tests/integration/test_auth.py"
-        ]
-    },
-    summary: "Integration review for tasks 1-3"
+Agent({
+    name: "skeptical-architect-reviewer",
+    prompt: `CLAIM: Implementation of parallel tasks [1, 2, 3] is properly wired together.
+
+Context:
+- Task 1 created auth types
+- Task 2 created API client
+- Task 3 created UI components
+
+Verify:
+- Types from Task 1 match imports in Tasks 2, 3
+- API client and UI can communicate
+- Run: pytest tests/integration/test_auth.py`
 })
 ```
 
@@ -293,7 +283,7 @@ When ready to close the team, say "shutdown team".
 When user says "shutdown team" or work is fully complete:
 
 ```typescript
-// Send shutdown request to each teammate
+// Send shutdown request to each implementer teammate
 SendMessage({
     to: "implementer-1",
     message: {
@@ -302,11 +292,13 @@ SendMessage({
     }
 })
 
-// Wait for shutdown_response from each
+// Wait for shutdown_response from each implementer
 // After all approve:
 
 TeamDelete()
 ```
+
+**Note:** skeptical-architect-reviewer is spawned fresh per review, so no shutdown needed for reviewers.
 
 ## Communication Patterns
 
@@ -323,11 +315,11 @@ SendMessage({
 })
 ```
 
-**Review request (Team Lead → Reviewer):**
-```
-SendMessage({
-    to: "spec-reviewer",
-    message: "Review Task 1 for spec compliance. Task description: [...]"
+**Review request (spawn fresh reviewer per task):**
+```typescript
+Agent({
+    name: "skeptical-architect-reviewer",
+    prompt: `CLAIM: Implementation at ${baseSha}..${headSha} matches Task 1 spec: [task_spec_text]`
 })
 ```
 
@@ -353,9 +345,10 @@ SendMessage({
 - Touches multiple files with integration → standard model
 - Requires design judgment → capable model
 
-**Reviewers:** Use capable model
+**Skeptical Architect Reviewer:** Uses capable model
 - Review requires understanding full context
 - Integration verification needs architectural understanding
+- Spawned fresh per review (not persistent teammate)
 
 ## Handling Issues
 
@@ -390,8 +383,9 @@ SendMessage({
 - Create TaskList with proper dependencies
 - Verify file ownership before claiming tasks
 - Run integration checks after parallel groups
-- Get shutdown approval before TeamDelete
+- Get shutdown approval from implementers before TeamDelete
 - Follow TDD for each task
+- Spawn fresh skeptical-architect-reviewer for each review
 
 ## Anti-Pattern: "This Task Is Too Simple To Review"
 
@@ -431,6 +425,6 @@ Violating this gate means violating the entire quality system.
 
 ## Teammate Prompt Templates
 
-- `./implementer-teammate-prompt.md` - Implementer role
-- `./spec-reviewer-teammate-prompt.md` - Spec compliance reviewer
-- `./code-quality-reviewer-teammate-prompt.md` - Code quality reviewer
+- `./implementer-teammate-prompt.md` - Implementer role (persistent teammate)
+
+**Reviews use:** `agents/skeptical-architect-reviewer.md` - Unified reviewer for SPEC/PLAN/CODE reviews (spawned fresh per review)

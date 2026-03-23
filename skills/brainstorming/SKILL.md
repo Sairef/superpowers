@@ -123,8 +123,15 @@ digraph brainstorming {
 **Spec Review Loop:**
 After writing the spec document:
 
-1. Dispatch spec-document-reviewer subagent (see spec-document-reviewer-prompt.md)
-2. If Issues Found: fix, re-dispatch, repeat until Approved
+1. Use skeptical-architect-reviewer agent:
+   ```
+   Agent({
+       subagent_type: "general-purpose",
+       name: "skeptical-architect-reviewer",
+       prompt: "CLAIM: Spec at [path] is complete and ready for implementation planning."
+   })
+   ```
+2. If FAIL: fix issues, re-dispatch, repeat until PASS
 3. If loop exceeds 3 iterations, surface to human for guidance
 
 **User Review Gate:**

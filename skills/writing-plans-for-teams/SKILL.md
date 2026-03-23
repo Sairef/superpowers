@@ -172,20 +172,16 @@ Task 4 waits for both 2 and 3
 
 After writing the complete plan:
 
-1. Dispatch a plan-document-reviewer teammate with:
-   - Path to plan document
-   - Path to spec document
-   - Parallelizability assessment to verify
-2. If Issues Found: fix issues, re-dispatch reviewer
-3. If Approved: proceed to execution handoff
-
-**Reviewer checks (in addition to standard checks):**
-- Dependency graph is correct and complete
-- File ownership doesn't create conflicts
-- Parallelizability assessment is accurate
-- Integration points between parallel tasks are identified
-
-See `./plan-document-reviewer-prompt.md` for reviewer template.
+1. Use skeptical-architect-reviewer agent:
+   ```
+   Agent({
+       subagent_type: "general-purpose",
+       name: "skeptical-architect-reviewer",
+       prompt: "CLAIM: Plan at [plan-path] based on spec at [spec-path] is complete and ready for execution."
+   })
+   ```
+2. If FAIL: fix issues, re-dispatch, repeat until PASS
+3. If loop exceeds 3 iterations, surface to human for guidance
 
 ## Execution Handoff
 
