@@ -93,6 +93,14 @@ digraph brainstorming {
 **Presenting the design:**
 
 - Once you believe you understand what you're building, present the design
+- **Before presenting each section**, pass it to skeptical-architect-reviewer:
+  ```
+  Agent({
+      name: "skeptical-architect-reviewer",
+      prompt: `CLAIM: This design section is complete and sound: [section content]`
+  })
+  ```
+- If skeptic finds issues, fix them before showing to user
 - Scale each section to its complexity: a few sentences if straightforward, up to 200-300 words if nuanced
 - Ask after each section whether it looks right so far
 - Cover: architecture, components, data flow, error handling, testing
