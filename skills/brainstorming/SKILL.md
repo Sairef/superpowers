@@ -101,6 +101,7 @@ digraph brainstorming {
   })
   ```
 - If skeptic finds issues, fix them before showing to user
+- **Context isolation rule:** Skeptic only sees what's in the prompt. Include all relevant context — if previous sections addressed related problems, explicitly include that context in the prompt so skeptic doesn't raise already-resolved issues
 - Scale each section to its complexity: a few sentences if straightforward, up to 200-300 words if nuanced
 - Ask after each section whether it looks right so far
 - Cover: architecture, components, data flow, error handling, testing
