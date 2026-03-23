@@ -156,6 +156,14 @@ Use the least powerful model that can handle each role:
 - Re-review after fixes
 - Answer implementer questions before they proceed
 
+<HARD-GATE>
+**Do NOT proceed to the next task until both skeptic reviews (spec + code quality) PASS for the current task.**
+
+**Why:** A small misunderstanding in Task 1 becomes wrong assumptions in Task 2, wrong interfaces in Task 3, and by Task 15 you're debugging a cascade of compounding issues. Early reviews are cheap; late debugging is expensive.
+
+No exceptions. No "this task is simple." No "I'll review after." Both reviews must pass before moving on.
+</HARD-GATE>
+
 ## Integration
 
 **Required workflow skills:**
