@@ -175,7 +175,6 @@ After writing the complete plan:
 1. Use skeptical-architect-reviewer agent:
    ```
    Agent({
-       subagent_type: "general-purpose",
        name: "skeptical-architect-reviewer",
        prompt: "CLAIM: Plan at [plan-path] based on spec at [spec-path] is complete and ready for execution."
    })

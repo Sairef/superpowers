@@ -126,7 +126,6 @@ After writing the spec document:
 1. Use skeptical-architect-reviewer agent:
    ```
    Agent({
-       subagent_type: "general-purpose",
        name: "skeptical-architect-reviewer",
        prompt: "CLAIM: Spec at [path] is complete and ready for implementation planning."
    })
