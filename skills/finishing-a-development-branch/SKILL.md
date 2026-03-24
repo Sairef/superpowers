@@ -9,57 +9,11 @@ description: Use when implementation is complete, all tests pass, and you need t
 
 Guide completion of development work by presenting clear options and handling chosen workflow.
 
-**Core principle:** Shutdown team (if any) → Verify tests → Present options → Execute choice → Clean up.
+**Core principle:** Verify tests → Present options → Execute choice → Clean up.
 
 **Announce at start:** "I'm using the finishing-a-development-branch skill to complete this work."
 
 ## The Process
-
-### Step 0: Check Team Status (If Applicable)
-
-**If you used agent-team-driven-development or have an active team:**
-
-By default, the team persists for PO/QA testing and feedback handling. Teammates have full context and can handle follow-up work efficiently.
-
-**Ask user about team:**
-```
-Team is active with experienced teammates who know the implementation.
-They can handle:
-- Bug fixes from testing
-- Clarifications
-- Adjustments based on feedback
-
-Options:
-1. Keep team active for testing/feedback (recommended)
-2. Shutdown team now
-
-Which?
-```
-
-**If user chooses to shutdown:**
-```typescript
-// Send shutdown request to each teammate
-SendMessage({
-    to: "implementer-1",
-    message: {
-        type: "shutdown_request",
-        reason: "Work complete, shutting down team"
-    }
-})
-// Repeat for each teammate
-
-// Wait for shutdown_response from each
-// After all approve:
-
-TeamDelete()
-```
-
-**If user keeps team active:**
-- Proceed with merge/PR options
-- Team remains available for follow-up
-- User can say "shutdown team" later when done
-
-**If no team was used:** Skip to Step 1.
 
 ### Step 1: Verify Tests
 
@@ -197,12 +151,12 @@ git worktree remove <worktree-path>
 
 ## Quick Reference
 
-| Option | Merge | Push | Keep Worktree | Cleanup Branch | Team Cleanup |
-|--------|-------|------|---------------|----------------|--------------|
-| 1. Merge locally | ✓ | - | - | ✓ | If team exists |
-| 2. Create PR | - | ✓ | ✓ | - | If team exists |
-| 3. Keep as-is | - | - | ✓ | - | If team exists |
-| 4. Discard | - | - | - | ✓ (force) | If team exists |
+| Option | Merge | Push | Keep Worktree | Cleanup Branch |
+|--------|-------|------|---------------|----------------|
+| 1. Merge locally | ✓ | - | - | ✓ |
+| 2. Create PR | - | ✓ | ✓ | - |
+| 3. Keep as-is | - | - | ✓ | - |
+| 4. Discard | - | - | - | ✓ (force) |
 
 ## Common Mistakes
 
@@ -239,10 +193,8 @@ git worktree remove <worktree-path>
 ## Integration
 
 **Called by:**
-- **agent-team-driven-development** - After all tasks complete (includes team shutdown)
 - **subagent-driven-development** - After all tasks complete
 - **executing-plans** - After all batches complete
 
 **Pairs with:**
 - **using-git-worktrees** - Cleans up worktree created by that skill
-- **TeamCreate/TeamDelete** - Shuts down team before other cleanup

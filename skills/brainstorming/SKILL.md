@@ -29,7 +29,7 @@ You MUST create a task for each of these items and complete them in order:
 6. **Write design doc** — save to `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md` and commit
 7. **Spec review loop** — dispatch spec-document-reviewer subagent with precisely crafted review context (never your session history); fix issues and re-dispatch until approved (max 3 iterations, then surface to human)
 8. **User reviews written spec** — ask user to review the spec file before proceeding
-9. **Transition to implementation** — invoke writing-plans or writing-plans-for-teams skill to create implementation plan
+9. **Transition to implementation** — invoke writing-plans skill
 
 ## Process Flow
 
@@ -46,8 +46,6 @@ digraph brainstorming {
     "Spec review loop" [shape=box];
     "Spec review passed?" [shape=diamond];
     "User reviews spec?" [shape=diamond];
-    "Parallelizable design?" [shape=diamond];
-    "Invoke writing-plans-for-teams" [shape=doublecircle];
     "Invoke writing-plans" [shape=doublecircle];
 
     "Explore project context" -> "Visual questions ahead?";
@@ -64,13 +62,11 @@ digraph brainstorming {
     "Spec review passed?" -> "Spec review loop" [label="issues found,\nfix and re-dispatch"];
     "Spec review passed?" -> "User reviews spec?" [label="approved"];
     "User reviews spec?" -> "Write design doc" [label="changes requested"];
-    "User reviews spec?" -> "Parallelizable design?" [label="approved"];
-    "Parallelizable design?" -> "Invoke writing-plans-for-teams" [label="yes (3+ independent\ncomponents)"];
-    "Parallelizable design?" -> "Invoke writing-plans" [label="no"];
+    "User reviews spec?" -> "Invoke writing-plans" [label="approved"];
 }
 ```
 
-**The terminal state is invoking writing-plans or writing-plans-for-teams.** Do NOT invoke frontend-design, mcp-builder, or any other implementation skill. The ONLY skill you invoke after brainstorming is a planning skill.
+**The terminal state is invoking writing-plans.** Do NOT invoke frontend-design, mcp-builder, or any other implementation skill. The ONLY skill you invoke after brainstorming is writing-plans.
 
 ## The Process
 
@@ -151,27 +147,7 @@ Wait for the user's response. If they request changes, make them and re-run the 
 
 **Implementation:**
 
-After user approves the spec, choose the appropriate planning skill:
-
-**Use writing-plans-for-teams when:**
-- Design has 3+ independent components
-- Components can be built in parallel
-- Clear file boundaries between components
-- Integration points are well-defined
-
-**Use writing-plans when:**
-- Mostly sequential implementation
-- Tightly coupled components
-- Simple, linear workflow
-
-**Choice process:**
-```
-Invoke the appropriate planning skill:
-- If parallelizable: "I'll use writing-plans-for-teams to create a team-ready implementation plan."
-- Otherwise: "I'll use writing-plans to create the implementation plan."
-```
-
-Do NOT invoke any other skill. A planning skill is the next step.
+After user approves the spec, invoke the writing-plans skill to create the implementation plan.
 
 ## Key Principles
 
