@@ -42,7 +42,7 @@ digraph process {
         "Dispatch implementer subagent" [shape=box];
         "Implementer asks questions?" [shape=diamond];
         "Answer questions" [shape=box];
-        "Implementer implements, tests, commits" [shape=box];
+        "Implementer implements, tests" [shape=box];
         "Dispatch skeptical-architect-reviewer (spec)" [shape=box];
         "Spec compliant?" [shape=diamond];
         "Implementer fixes" [shape=box];
@@ -54,14 +54,14 @@ digraph process {
     "Read plan, extract tasks, create TodoWrite" [shape=box];
     "More tasks?" [shape=diamond];
     "Dispatch skeptical-architect-reviewer (final)" [shape=box];
-    "Use finishing-a-development-branch" [shape=box style=filled fillcolor=lightgreen];
+    "All done" [shape=box style=filled fillcolor=lightgreen];
 
     "Read plan, extract tasks, create TodoWrite" -> "Dispatch implementer subagent";
     "Dispatch implementer subagent" -> "Implementer asks questions?";
     "Implementer asks questions?" -> "Answer questions" [label="yes"];
     "Answer questions" -> "Dispatch implementer subagent";
-    "Implementer asks questions?" -> "Implementer implements, tests, commits" [label="no"];
-    "Implementer implements, tests, commits" -> "Dispatch skeptical-architect-reviewer (spec)";
+    "Implementer asks questions?" -> "Implementer implements, tests" [label="no"];
+    "Implementer implements, tests" -> "Dispatch skeptical-architect-reviewer (spec)";
     "Dispatch skeptical-architect-reviewer (spec)" -> "Spec compliant?";
     "Spec compliant?" -> "Implementer fixes" [label="no"];
     "Implementer fixes" -> "Dispatch skeptical-architect-reviewer (spec)";
@@ -73,7 +73,7 @@ digraph process {
     "Mark task complete" -> "More tasks?";
     "More tasks?" -> "Dispatch implementer subagent" [label="yes"];
     "More tasks?" -> "Dispatch skeptical-architect-reviewer (final)" [label="no"];
-    "Dispatch skeptical-architect-reviewer (final)" -> "Use finishing-a-development-branch";
+    "Dispatch skeptical-architect-reviewer (final)" -> "All done";
 }
 ```
 
@@ -167,9 +167,7 @@ No exceptions. No "this task is simple." No "I'll review after." Both reviews mu
 ## Integration
 
 **Required workflow skills:**
-- **superpowers:using-git-worktrees** - REQUIRED: Set up isolated workspace
 - **superpowers:writing-plans** - Creates the plan this skill executes
-- **superpowers:finishing-a-development-branch** - Complete after all tasks
 
 **Subagents should use:**
 - **superpowers:test-driven-development** - TDD for each task
