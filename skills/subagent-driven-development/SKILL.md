@@ -31,6 +31,55 @@ digraph when_to_use {
 }
 ```
 
+## Task Creation
+
+**For each task in the plan, create TWO tasks:**
+
+1. **Implementation task** - "Implement Task N: [name]"
+2. **Review task** - "Review Task N: [name]" - blocked by implementation task
+
+**Task lifecycle:**
+- Implementation task → in_progress when implementer dispatched
+- Implementation task → completed when implementer returns DONE (save `agentId` from response)
+- Review task → in_progress when first skeptic dispatched
+- Review task → completed ONLY when all 3 skeptics PASS
+
+**Review task contains 3 independent skeptic runs (all must PASS):**
+1. Spec compliance - does it match the spec?
+2. Plan compliance - does it match the plan?
+3. Code quality - is it well-built?
+
+If any skeptic returns FAIL → re-dispatch implementer via `SendMessage` with feedback, then re-run all 3 skeptics fresh.
+
+<HARD-GATE>
+**ALWAYS create review task. No exceptions.**
+
+Even for "trivial" tasks:
+- "Add re-export to index file" → still needs review task
+- "Fix typo in comment" → still needs review task
+- "Update import path" → still needs review task
+
+**Why:** "Simple" tasks are where mistakes hide. Wrong export name, missing import, subtle breaking change. Fresh skeptic catches these. Skipping review on "simple" tasks is how technical debt accumulates.
+
+No "this is too simple." No "not worth reviewing." Always create both tasks.
+</HARD-GATE>
+
+## Re-dispatch Rules
+
+**Implementer:** Re-dispatch via `SendMessage` to preserve context
+```
+agentId: abd266b37da59af87 (use SendMessage with to: 'abd266b37da59af87' to continue this agent)
+→ SendMessage({ to: 'abd266b37da59af87', message: 'skeptic feedback: [issues]' })
+```
+
+**All 3 Skeptics:** Always dispatch **fresh** (new Agent call) - never restore session
+```
+→ Agent({ name: "skeptical-architect-reviewer", prompt: "CLAIM: Spec compliance - ..." })
+→ Agent({ name: "skeptical-architect-reviewer", prompt: "CLAIM: Plan compliance - ..." })
+→ Agent({ name: "skeptical-architect-reviewer", prompt: "CLAIM: Code quality - ..." })
+```
+**Why:** Fresh skeptic = unbiased review. Each skeptic works independently without seeing other reviews.
+
 ## The Process
 
 ```dot
@@ -39,69 +88,90 @@ digraph process {
 
     subgraph cluster_per_task {
         label="Per Task";
-        "Dispatch implementer subagent" [shape=box];
+        "Dispatch implementer" [shape=box];
         "Implementer asks questions?" [shape=diamond];
         "Answer questions" [shape=box];
         "Implementer implements, tests" [shape=box];
-        "Dispatch skeptical-architect-reviewer (spec)" [shape=box];
-        "Spec compliant?" [shape=diamond];
-        "Implementer fixes" [shape=box];
-        "Dispatch skeptical-architect-reviewer (code)" [shape=box];
-        "Code quality OK?" [shape=diamond];
-        "Mark task complete" [shape=box];
+        "Mark impl task complete\n(save agentId)" [shape=box];
+
+        "Dispatch skeptic 1 (spec)" [shape=box];
+        "Spec PASS?" [shape=diamond];
+        "Dispatch skeptic 2 (plan)" [shape=box];
+        "Plan PASS?" [shape=diamond];
+        "Dispatch skeptic 3 (quality)" [shape=box];
+        "Quality PASS?" [shape=diamond];
+
+        "Re-dispatch implementer\n(via SendMessage)" [shape=box];
+        "Mark review task complete" [shape=box];
     }
 
-    "Read plan, extract tasks, create TodoWrite" [shape=box];
+    "Read plan, create 2 tasks per plan item" [shape=box];
     "More tasks?" [shape=diamond];
-    "Dispatch skeptical-architect-reviewer (final)" [shape=box];
+    "Final skeptic (all tasks)" [shape=box];
     "All done" [shape=box style=filled fillcolor=lightgreen];
 
-    "Read plan, extract tasks, create TodoWrite" -> "Dispatch implementer subagent";
-    "Dispatch implementer subagent" -> "Implementer asks questions?";
+    "Read plan, create 2 tasks per plan item" -> "Dispatch implementer";
+    "Dispatch implementer" -> "Implementer asks questions?";
     "Implementer asks questions?" -> "Answer questions" [label="yes"];
-    "Answer questions" -> "Dispatch implementer subagent";
+    "Answer questions" -> "Dispatch implementer";
     "Implementer asks questions?" -> "Implementer implements, tests" [label="no"];
-    "Implementer implements, tests" -> "Dispatch skeptical-architect-reviewer (spec)";
-    "Dispatch skeptical-architect-reviewer (spec)" -> "Spec compliant?";
-    "Spec compliant?" -> "Implementer fixes" [label="no"];
-    "Implementer fixes" -> "Dispatch skeptical-architect-reviewer (spec)";
-    "Spec compliant?" -> "Dispatch skeptical-architect-reviewer (code)" [label="yes"];
-    "Dispatch skeptical-architect-reviewer (code)" -> "Code quality OK?";
-    "Code quality OK?" -> "Implementer fixes" [label="no"];
-    "Implementer fixes" -> "Dispatch skeptical-architect-reviewer (code)";
-    "Code quality OK?" -> "Mark task complete" [label="yes"];
-    "Mark task complete" -> "More tasks?";
-    "More tasks?" -> "Dispatch implementer subagent" [label="yes"];
-    "More tasks?" -> "Dispatch skeptical-architect-reviewer (final)" [label="no"];
-    "Dispatch skeptical-architect-reviewer (final)" -> "All done";
+    "Implementer implements, tests" -> "Mark impl task complete\n(save agentId)";
+
+    "Mark impl task complete\n(save agentId)" -> "Dispatch skeptic 1 (spec)";
+    "Dispatch skeptic 1 (spec)" -> "Spec PASS?";
+    "Spec PASS?" -> "Re-dispatch implementer\n(via SendMessage)" [label="no"];
+    "Spec PASS?" -> "Dispatch skeptic 2 (plan)" [label="yes"];
+
+    "Dispatch skeptic 2 (plan)" -> "Plan PASS?";
+    "Plan PASS?" -> "Re-dispatch implementer\n(via SendMessage)" [label="no"];
+    "Plan PASS?" -> "Dispatch skeptic 3 (quality)" [label="yes"];
+
+    "Dispatch skeptic 3 (quality)" -> "Quality PASS?";
+    "Quality PASS?" -> "Re-dispatch implementer\n(via SendMessage)" [label="no"];
+    "Quality PASS?" -> "Mark review task complete" [label="yes"];
+
+    "Re-dispatch implementer\n(via SendMessage)" -> "Dispatch skeptic 1 (spec)";
+
+    "Mark review task complete" -> "More tasks?";
+    "More tasks?" -> "Dispatch implementer" [label="yes"];
+    "More tasks?" -> "Final skeptic (all tasks)" [label="no"];
+    "Final skeptic (all tasks)" -> "All done";
 }
 ```
 
 ## Reviews with skeptical-architect-reviewer
 
-All reviews use the skeptical-architect-reviewer agent. Pass appropriate CLAIM:
+All 3 reviews use fresh skeptical-architect-reviewer instances:
 
-**Spec compliance review:**
+**1. Spec compliance:**
 ```
 Agent({
     name: "skeptical-architect-reviewer",
-    prompt: "CLAIM: Implementation at [base_sha]..[head_sha] matches Task N spec: [task_spec_text]"
+    prompt: "CLAIM: Implementation matches spec: [spec_text]"
 })
 ```
 
-**Code quality review:**
+**2. Plan compliance:**
 ```
 Agent({
     name: "skeptical-architect-reviewer",
-    prompt: "CLAIM: Code at [base_sha]..[head_sha] is well-built and follows project standards"
+    prompt: "CLAIM: Implementation matches plan task: [plan_task_text]"
 })
 ```
 
-**Final review:**
+**3. Code quality:**
 ```
 Agent({
     name: "skeptical-architect-reviewer",
-    prompt: "CLAIM: All tasks from plan [plan_path] are complete and integrated"
+    prompt: "CLAIM: All code from git diff is well-built and follows project standards"
+})
+```
+
+**Final review (after all tasks):**
+```
+Agent({
+    name: "skeptical-architect-reviewer",
+    prompt: "CLAIM: All tasks from plan are complete and integrated"
 })
 ```
 
@@ -139,21 +209,20 @@ Use the least powerful model that can handle each role:
 
 **Never:**
 - Start implementation on main/master without explicit consent
-- Skip reviews (spec compliance OR code quality)
+- Skip any of the 3 reviews (spec, plan, quality)
 - Proceed with unfixed issues
 - Dispatch multiple implementers in parallel (conflicts)
 - Make subagent read plan file (provide full text)
 - Skip scene-setting context
 - Ignore subagent questions
-- Accept "close enough" on spec compliance
-- Skip review loops
-- Let implementer self-review replace actual review
-- Start code quality review before spec compliance passes
-- Move to next task while review has open issues
+- Accept "close enough" on any review
+- Restore skeptic session (always dispatch fresh)
+- Move to next task while review task still in_progress
 
 **Always:**
-- Two-stage review per task (spec → code quality)
-- Re-review after fixes
+- Create review task for every task
+- Run all 3 skeptics (spec → plan → quality)
+- Re-run all 3 skeptics after implementer fixes
 - Answer implementer questions before they proceed
 
 <HARD-GATE>
