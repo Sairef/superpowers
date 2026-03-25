@@ -27,7 +27,7 @@ You MUST create a task for each of these items and complete them in order:
 4. **Propose 2-3 approaches** — with trade-offs and your recommendation
 5. **Present design** — in sections scaled to their complexity, get user approval after each section
 6. **Write design doc** — save to `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md` and commit
-7. **Spec review loop** — dispatch skeptical-architect-reviewer subagent with precisely crafted review context (never your session history); fix issues and re-dispatch until approved (continue until no significant issues found)
+7. **Spec review loop** — dispatch skeptical-architect-reviewer subagent with precisely crafted review context (never your session history); fix issues and re-dispatch until PASS (no arbitrary iteration limit)
 8. **User reviews written spec** — ask user to review the spec file before proceeding
 9. **Transition to implementation** — invoke writing-plans skill
 
@@ -136,7 +136,7 @@ After writing the spec document:
    })
    ```
 2. If FAIL: fix issues, re-dispatch, repeat until PASS
-3. Continue until skeptic finds no significant issues (no arbitrary iteration limit)
+3. Continue until skeptic returns PASS (no arbitrary iteration limit)
 
 **User Review Gate:**
 After the spec review loop passes, ask the user to review the written spec before proceeding:

@@ -116,7 +116,7 @@ After writing the complete plan:
 
 **Review loop guidance:**
 - Same agent that wrote the plan fixes it (preserves context)
-- Continue until skeptic finds no significant issues (no arbitrary iteration limit)
+- Continue until skeptic returns PASS (no arbitrary iteration limit)
 - Reviewers are advisory — explain disagreements if you believe feedback is incorrect
 
 ## Execution Handoff
