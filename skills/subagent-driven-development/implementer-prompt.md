@@ -37,6 +37,15 @@ Task tool (general-purpose):
 
     Work from: [directory]
 
+    ## Code Navigation
+
+    **Prefer LSP/semantic navigation over raw text search:**
+    - Use LSP for: symbol definitions, references, call paths, type relationships
+    - Use grep/glob for: filenames, strings, broad discovery
+
+    LSP understands code structure. Grep only matches text. When exploring
+    how code connects, use semantic tools first.
+
     **While you work:** If you encounter something unexpected or unclear, **ask questions**.
     It's always OK to pause and clarify. Don't guess or make assumptions.
 
